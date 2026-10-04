@@ -17,9 +17,22 @@ import { aboutPage } from "./pages/about.js";
 import { workPage } from "./pages/work.js";
 import { skillsPage } from "./pages/skills.js";
 import { contactPage } from "./pages/contact.js";
+import Lenis from "lenis";
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ctx = { reducedMotion };
+
+if (!reducedMotion) {
+  const lenis = new Lenis({
+    lerp: 0.08, // The lower the number, the smoother and more "buttery" it feels
+    smoothWheel: true,
+  });
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+}
 
 // ── Header (it stays put while the pages change) ─────────────
 const nav = site.nav
