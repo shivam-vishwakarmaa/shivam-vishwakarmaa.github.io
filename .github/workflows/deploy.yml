@@ -1,0 +1,44 @@
+# Rebuilds and redeploys the site to GitHub Pages:
+#   - whenever you push to main
+#   - every 6 hours, so your LeetCode graph stays up to date on its own
+#   - on demand, from the repo's "Actions" tab (Run workflow)
+# One-time setup: in the GitHub repo go to Settings -> Pages -> Source and choose "GitHub Actions".
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # `npm run build` first downloads your latest LeetCode graph (see scripts/sync-leetcode.mjs)
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
